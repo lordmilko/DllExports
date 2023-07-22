@@ -1,0 +1,11 @@
+﻿<!-- The "TaskFolder" and "TaskAssembly" properties we're defining here are just for us internally -->
+<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
+	<PropertyGroup>
+		<TaskFolder Condition="'$(MSBuildRuntimeType)' == 'Core'">net5.0</TaskFolder>
+		<TaskFolder Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskFolder>
+
+		<TaskAssembly Condition="'$(TaskAssembly)' == ''">$(MSBuildThisFileDirectory)..\tasks\$(TaskFolder)\DllExports.MSBuild.dll</TaskAssembly>
+	</PropertyGroup>
+
+	<UsingTask TaskName="DllExports.MSBuild.GenerateDllExports" AssemblyFile="$(TaskAssembly)" />
+</Project>

@@ -1,0 +1,36 @@
+﻿<Project>
+	<Target Name="DllExportGenerateExports" AfterTargets="Build">
+		<PropertyGroup>
+			<!-- Whether to process DLL Exports -->
+			<DllExportsEnabled Condition="'$(DllExportsEnabled)' == ''">true</DllExportsEnabled>
+
+			<!-- The full path to the file to generate exports for -->
+			<DllExportsInputFile Condition="'$(DllExportsInputFile)' == ''">$(TargetPath)</DllExportsInputFile>
+
+			<!-- The full path to the file the modified assembly should be saved as. Can be the same as the input file.
+		     If this value does not contain a path to a file, the same directory as DllExportsInputFile will be used -->
+			<DllExportsOutputFile Condition="'$(DllExportsOutputFile)' == ''">$(DllExportsInputFile)</DllExportsOutputFile>
+
+			<!-- CPU architectures to generate separate architecture files for. Valid values: i386, AMD64 -->
+			<DllExportsArchitectures Condition="'$(DllExportsArchitectures)' == ''"></DllExportsArchitectures>
+
+			<!-- When DllExportsArchitectures is specified, what should the filename format of each file be, e.g. Foo.x64.
+		       Value of {name} is derived from file name specified in DllExportsOutputFile.
+					 i386 will be called "x86", and "AMD64" will be called x64 -->
+			<DllExportsArchitectureNameFormat Condition="'$(DllExportsArchitectureNameFormat)' == ''">{name}.{arch}</DllExportsArchitectureNameFormat>
+
+			<!-- Whether to remove DllExportsInputFile after generating exports. Useful when you want to generate per-architecture exports.
+		       Only valid when DllExportsInputFile and DllExportsOutputFile are different or you're doing per-architecture exports -->
+			<DllExportsRemoveInputFile Condition="'$(DllExportsRemoveInputFile)' == ''">false</DllExportsRemoveInputFile>
+		</PropertyGroup>
+
+		<GenerateDllExports
+				Enabled="$(DllExportsEnabled)"
+				InputFile="$(DllExportsInputFile)"
+				OutputFile="$(DllExportsOutputFile)"
+				Architectures="$(DllExportsArchitectures)"
+				ArchitectureNameFormat="$(DllExportsArchitectureNameFormat)"
+				RemoveInputFile="$(DllExportsRemoveInputFile)"
+		/>
+	</Target>
+</Project>

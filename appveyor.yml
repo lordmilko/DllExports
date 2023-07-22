@@ -1,0 +1,33 @@
+version: 'Build #{build}'
+image: Visual Studio 2019
+configuration: Release
+environment:
+  # Don't bother setting up a package cache
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+install:
+  - ps: . .\build.ps1
+before_build:
+  # Restore NuGet packages
+  - ps: dotnet restore
+build_script:
+  - ps: |
+      build
+      dotnet build DllExports.Tests --no-dependencies
+before_test:
+  # Build NuGet packages
+  - ps: pack
+test_script:
+  - ps: test
+  - vstest.console /logger:Appveyor DllExports.Tests\bin\%CONFIGURATION%\net472\DllExports.Tests.dll
+  - vstest.console /logger:Appveyor DllExports.Tests\bin\%CONFIGURATION%\net5.0\DllExports.Tests.dll
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+artifacts:
+  - path: '*.nupkg'
+skip_commits:
+  files:
+    - '**/*.md'
+    - '**/*.yml'
+    - '**/*.nuspec'
+skip_tags: true

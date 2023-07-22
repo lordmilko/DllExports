@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="..\Version.props" />
+
+	<PropertyGroup>
+		<TargetFrameworks>net472;netstandard2.0;net5.0</TargetFrameworks>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+		<Title>DllExports</Title>
+		<PackageId>DllExports</PackageId>
+		<Authors>lordmilko</Authors>
+		<Description>Unmanaged Exports for legacy/SDK style projects</Description>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<Copyright>(c) 2023 lordmilko. All rights reserved.</Copyright>
+
+		<PackageReleaseNotes>DllExports provides unmanaged exports for both legacy and SDK style projects.
+			
+Unlike other libraries that rely on a wacky series of external dependencies, DllExports has everything it needs to do its job built in.
+
+DllExports is entirely driven by its MSBuild task, and provides a number of knobs you can adjust to customize the resulting assemblies,
+including converting AnyCPU assemblies into both x86 and x64 outputs.
+
+Note that when using IDA Pro, load the file as "Portable executable for 80386 (PE)" instead of "Microsoft.NET assembly" in order to see the exports.
+
+In order to be able to debug your exports in Visual Studio you must be targeting .NET Framework. .NET Standard exports work but you can't debug them.
+.NET Core applications can't truly have unmanaged exports as you can't use mscoree to load their runtime. Consider using a library such as DNNE for proper .NET Core support.</PackageReleaseNotes>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE" Pack="true" PackagePath="" Visible="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Build.Framework" Version="16.11.0" IncludeAssets="compile" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.11.0" IncludeAssets="compile" PrivateAssets="all" />
+		<PackageReference Include="dnlib" Version="3.6.0" IncludeAssets="all" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="build\*">
+			<Pack>true</Pack>
+			<PackagePath>build</PackagePath>
+		</None>
+
+		<ProjectReference Include="..\DllExports\DllExports.csproj" PrivateAssets="all" />
+	</ItemGroup>
+
+	<!-- Copy dependencies to output dir -->
+	<PropertyGroup>
+		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+	</PropertyGroup>
+
+	<Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+		<ItemGroup>
+			<_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" />
+		</ItemGroup>
+
+		<ItemGroup>
+			<!-- Add file to package with consideration of sub folder. If empty, the root folder is chosen. -->
+			<BuildOutputInPackage Include="@(_ReferenceCopyLocalPaths)" TargetPath="%(_ReferenceCopyLocalPaths.DestinationSubDirectory)" />
+		</ItemGroup>
+	</Target>
+
+</Project>
