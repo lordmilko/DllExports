@@ -131,7 +131,7 @@ namespace DllExports
 
                 moduleOptions.WritePdb = true;
 
-                module.Write(options.OutputFile, moduleOptions);
+                module.Write(output.Path, moduleOptions);
             }
         }
 

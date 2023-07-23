@@ -23,9 +23,7 @@ Thus hopefully ensuring it continues to work into the future.
 exports as you can't use mscoree to load their runtime. Consider using a library such as [DNNE](https://github.com/AaronRobinsonMSFT/DNNE) for proper .NET Core support
 (however this will require C++ tooling to be properly installed).**
 
-Note that when using IDA Pro, load the file as `Portable executable for 80386 (PE)` instead of `Microsoft.NET assembly` in order to see the exports.
-
-See [Tips](#tips) for some important gotchas to be aware of.
+Please see [Tips](#tips) below for some important gotchas to be aware of.
 
 ## Usage
 
@@ -66,25 +64,25 @@ for seamless support with legacy style projects. You can easily inject the requi
 1. Insert the `props` import after all other props imports at the top of the file
 
 ```xml
-<Import Project="..\..\packages\DllExports.0.1.0\build\DllExports.props" Condition="Exists('..\..\packages\DllExports.0.1.0\build\DllExports.targets')" />
+<Import Project="..\..\packages\DllExports.0.1.1\build\DllExports.props" Condition="Exists('..\..\packages\DllExports.0.1.1\build\DllExports.targets')" />
 ```
 2. Add a package reference, with `Private = False` so DllExports does not get emitted to your output directory
 
 ```xml
 <Reference Include="DllExports">
-  <HintPath>..\..\packages\DllExports.0.1.0\lib\netstandard2.0\DllExports.dll</HintPath>
+  <HintPath>..\..\packages\DllExports.0.1.1\lib\netstandard2.0\DllExports.dll</HintPath>
   <Private>False</Private>
 </Reference>
 ```
 3. Import the `targets` at the end of the file and add a `Target` to warn when NuGet packages have not been restored
 
 ```xml
-<Import Project="..\..\packages\DllExports.0.1.0\build\DllExports.targets" Condition="Exists('..\..\packages\DllExports.0.1.0\build\DllExports.targets')" />
+<Import Project="..\..\packages\DllExports.0.1.1\build\DllExports.targets" Condition="Exists('..\..\packages\DllExports.0.1.1\build\DllExports.targets')" />
 <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
   <PropertyGroup>
     <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
   </PropertyGroup>
-  <Error Condition="!Exists('..\..\packages\DllExports.0.1.0\build\DllExports.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\DllExports.0.1.0\build\DllExports.targets'))" />
+  <Error Condition="!Exists('..\..\packages\DllExports.0.1.1\build\DllExports.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\DllExports.0.1.1\build\DllExports.targets'))" />
 </Target>
 ```
 
@@ -92,8 +90,12 @@ Adjust the version number in the above snippets as necessary. The [NetFramework]
 
 ## Tips
 
+* You cannot use projects that generate Portable PDB files together with DllExports in Visual Studio 2017. Something about the modifications that dnlib (which DllExports uses internally) makes upsets Visual Studio when it goes to load
+the modified PDB file, and crashes the entire program. As such, DllExports will throw an error if it detects you are using portable/embedded PDB files in Visual Studio 2017, and recommend you use `<DebugType>full</DebugType>` instead.
+Newer versions of Visual Studio do not have this issue. It's not clear whether Visual Studio 2017 or dnlib is failing to follow the Portable PDB file format properly. Legacy style projects default to *full* PDB files, while SDK style projects
+default to *portable*.
 * Don't use types types external to your assembly or the CLR in the method signature of your exports. e.g. do not use the `HRESULT` type from [ClrDebug](https://github.com/lordmilko/ClrDebug). The runtime is not in a position to load
-external assemblies when your export is called. You can however use types defined in the same assembly that your export is defined in
+external assemblies when your export is called. You can however use types defined in the same assembly that your export is defined in.
     * Once an external assembly has been loaded, it is safe to use types in external external assemblies in subsequently called exports
 * You can force architecture specific files to be placed in an architecture specific subdirectory by setting `DllExportsArchitectureNameFormat` to something like `{arch}\{name}.{arch}` i.e. `Foo.dll` compiled for AMD64 will go to `x64\Foo.x64.dll`
 * When multi-targeting, you can conditionally generate unmanaged exports for compatible assemblies as follows

@@ -24,6 +24,12 @@
 			<DllExportsRemoveInputFile Condition="'$(DllExportsRemoveInputFile)' == ''">false</DllExportsRemoveInputFile>
 		</PropertyGroup>
 
+		<Error
+			Text="Visual Studio 2017 will crash when attempting to debug Portable PDB files that have been modified by DllExports.
+			Consider setting &quot;&lt;DebugType&gt;full&lt;/DebugType&gt;&quot; or using a newer version of Visual Studio."
+			Condition="$(DllExportsEnabled) And '$(VisualStudioVersion)' == '15.0' And ('$(DebugType.ToLower())' == 'portable' Or '$(DebugType.ToLower())' == 'embedded')"
+		/>
+
 		<GenerateDllExports
 				Enabled="$(DllExportsEnabled)"
 				InputFile="$(DllExportsInputFile)"
